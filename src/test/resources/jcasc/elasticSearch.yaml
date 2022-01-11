@@ -17,6 +17,7 @@ jenkins:
 unclassified:
   logstashConfiguration:
     enableGlobally: true
+    enableBuildScopedConnection: true
     enabled: true
     logstashIndexer:
         elasticSearch:

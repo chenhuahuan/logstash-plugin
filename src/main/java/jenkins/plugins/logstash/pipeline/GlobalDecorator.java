@@ -51,12 +51,14 @@ public class GlobalDecorator extends TaskListenerDecorator {
 
     @Override
     public TaskListenerDecorator of(FlowExecutionOwner owner) {
+      LOGGER.log(Level.INFO, "isEnableGlobally---{0}", LogstashConfiguration.getInstance().isEnableGlobally());
       if (!LogstashConfiguration.getInstance().isEnableGlobally()) {
         return null;
       }
       try {
         Queue.Executable executable = owner.getExecutable();
         if (executable instanceof WorkflowRun) {
+          LOGGER.log(Level.INFO, "Running in new Global Decorator----");
           return new GlobalDecorator((WorkflowRun) executable);
         }
       } catch (IOException x) {

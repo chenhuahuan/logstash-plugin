@@ -17,6 +17,7 @@ jenkins:
 unclassified:
   logstashConfiguration:
     enableGlobally: true
+    isEnableBuildScopedConnection: true
     enabled: true
     logstashIndexer:
         rabbitMq:

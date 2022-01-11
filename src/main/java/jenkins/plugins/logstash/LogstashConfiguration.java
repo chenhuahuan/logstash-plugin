@@ -41,6 +41,7 @@ public class LogstashConfiguration extends GlobalConfiguration
   private Boolean enabled;
   private boolean dataMigrated = false;
   private boolean enableGlobally = false;
+  private boolean enableBuildScopedConnection = true;
   private boolean milliSecondTimestamps = true;
   private transient LogstashIndexer<?> activeIndexer;
 
@@ -82,6 +83,16 @@ public class LogstashConfiguration extends GlobalConfiguration
   public void setEnableGlobally(boolean enableGlobally)
   {
     this.enableGlobally = enableGlobally;
+  }
+
+  public boolean isEnableBuildScopedConnection()
+  {
+    return enableBuildScopedConnection;
+  }
+
+  public void setEnableBuildScopedConnection(boolean enableBuildScopedConnection)
+  {
+    this.enableBuildScopedConnection = enableBuildScopedConnection;
   }
 
   public boolean isMilliSecondTimestamps()
