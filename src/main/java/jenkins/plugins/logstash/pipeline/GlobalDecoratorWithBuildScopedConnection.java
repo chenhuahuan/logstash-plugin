@@ -1,16 +1,5 @@
 package jenkins.plugins.logstash.pipeline;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Queue;
@@ -18,20 +7,30 @@ import hudson.model.Run;
 import jenkins.plugins.logstash.LogstashConfiguration;
 import jenkins.plugins.logstash.LogstashOutputStream;
 import jenkins.plugins.logstash.LogstashWriter;
+import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.log.TaskListenerDecorator;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @SuppressFBWarnings(value="SE_NO_SERIALVERSIONID")
-public class GlobalDecorator extends TaskListenerDecorator {
-  private static final Logger LOGGER = Logger.getLogger(GlobalDecorator.class.getName());
+public class GlobalDecoratorWithBuildScopedConnection extends TaskListenerDecorator {
+  private static final Logger LOGGER = Logger.getLogger(GlobalDecoratorWithBuildScopedConnection.class.getName());
 
   private transient Run<?, ?> run;
   private String stageName;
   private String agentName;
   AtomicBoolean isBuildScopedConnectionBroken;
 
-  public GlobalDecorator(WorkflowRun run) {
+  public GlobalDecoratorWithBuildScopedConnection(WorkflowRun run) {
     this(run, null, null);
   }
-  public GlobalDecorator(WorkflowRun run, String stageName, String agentName) {
+  public GlobalDecoratorWithBuildScopedConnection(WorkflowRun run, String stageName, String agentName) {
     LOGGER.log(Level.INFO, "Creating decorator for {0}", run.toString());
     this.run = run;
     this.stageName = stageName;
@@ -62,9 +61,9 @@ public class GlobalDecorator extends TaskListenerDecorator {
           LOGGER.log(Level.INFO, "Running in new Global Decorator----");
           LOGGER.log(Level.INFO, "isEnableBuildScopedConnection---{0}", LogstashConfiguration.getInstance().isEnableBuildScopedConnection());
           if (!LogstashConfiguration.getInstance().isEnableBuildScopedConnection()) {
-            return new GlobalDecorator((WorkflowRun) executable, );
+            return new GlobalDecoratorWithBuildScopedConnection((WorkflowRun) executable, );
           } else {
-            return new GlobalDecorator((WorkflowRun) executable);
+            return new GlobalDecoratorWithBuildScopedConnection((WorkflowRun) executable);
           }
         }
       } catch (IOException x) {
