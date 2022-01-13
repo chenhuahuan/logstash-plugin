@@ -46,16 +46,18 @@ public class LogstashOutputStream extends LineTransformationOutputStream {
   private final OutputStream delegate;
   private final LogstashWriter logstash;
   private final AtomicBoolean isBuildConnectionBroken;
+  private final boolean isEnableBuildScopedConnection;
   private final String run;
 
   public LogstashOutputStream(OutputStream delegate, LogstashWriter logstash) {
-    this(delegate, logstash, new AtomicBoolean(false), "");
+    this(delegate, logstash, new AtomicBoolean(false), false, "");
   }
 
-  public LogstashOutputStream(OutputStream delegate, LogstashWriter logstash, AtomicBoolean isBuildConnectionBroken, String run) {
+  public LogstashOutputStream(OutputStream delegate, LogstashWriter logstash, AtomicBoolean isBuildConnectionBroken, boolean isEnableBuildScopedConnection, String run) {
     super();
     this.delegate = delegate;
     this.logstash = logstash;
+    this.isEnableBuildScopedConnection = isEnableBuildScopedConnection;
     this.isBuildConnectionBroken = isBuildConnectionBroken;
     this.run = run;
 
