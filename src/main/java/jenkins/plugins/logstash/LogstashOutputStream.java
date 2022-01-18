@@ -30,6 +30,10 @@ import hudson.console.LineTransformationOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Output stream that writes each line to the provided delegate output stream
  * and also sends it to an indexer for logstash to consume.
@@ -38,13 +42,28 @@ import java.io.OutputStream;
  * @author Rusty Gerard
  */
 public class LogstashOutputStream extends LineTransformationOutputStream {
+  private static final Logger LOGGER = Logger.getLogger(LogstashOutputStream.class.getName());
+
   private final OutputStream delegate;
   private final LogstashWriter logstash;
+  private final AtomicBoolean isBuildConnectionBroken;
+  private final String run;
 
   public LogstashOutputStream(OutputStream delegate, LogstashWriter logstash) {
+    this(delegate, logstash, new AtomicBoolean(false), "");
+  }
+
+  public LogstashOutputStream(OutputStream delegate, LogstashWriter logstash, AtomicBoolean isBuildConnectionBroken, String run) {
     super();
     this.delegate = delegate;
     this.logstash = logstash;
+    this.isBuildConnectionBroken = isBuildConnectionBroken;
+    this.run = run;
+
+  }
+
+  public AtomicBoolean getIsBuildConnectionBroken() {
+    return isBuildConnectionBroken;
   }
 
   // for testing purposes
@@ -58,10 +77,17 @@ public class LogstashOutputStream extends LineTransformationOutputStream {
     delegate.write(b, 0, len);
     this.flush();
 
-    if(!logstash.isConnectionBroken()) {
-      String line = new String(b, 0, len, logstash.getCharset());
-      line = ConsoleNote.removeNotes(line).trim();
-      logstash.write(line);
+    if (!getIsBuildConnectionBroken().get()) {
+      if (!logstash.isConnectionBroken()) {
+        String line = new String(b, 0, len, logstash.getCharset());
+        line = ConsoleNote.removeNotes(line).trim();
+        logstash.write(line);
+      }
+      // Once it gets connection broken, set the build connection flag to true.
+      if (logstash.isConnectionBroken()) {
+        getIsBuildConnectionBroken().set(true);
+        LOGGER.log(Level.WARNING, "Mark logstash connection broken for build: {0}.", run);
+      }
     }
   }
 
